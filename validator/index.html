@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>밸리데이터 수익 계산기</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>밸리데이터 수익 계산기</h1>
+            <p>밸리데이터 수익을 계산하고 목표 수익 달성 시나리오를 분석해보세요.</p>
+        </header>
+
+        <div class="calculator-section">
+            <h2>1. 기본 수익 계산기</h2>
+            <p>현재 조건에서의 연간 수익을 계산해보세요.</p>
+            
+            <div class="case-selector">
+                <label for="case-select">계산 방식 선택:</label>
+                <select id="case-select">
+                    <option value="case1">달러 기반 계산</option>
+                    <option value="case2">토큰 기반 계산</option>
+                </select>
+            </div>
+
+            <!-- 달러 기반 계산기 -->
+            <div id="usd-calculator" class="calculator">
+                <h3>달러 기반 수익 계산</h3>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="fdv-select-usd">FDV</label>
+                        <div class="fdv-input-container">
+                            <select id="fdv-select-usd">
+                                <option value="custom">직접 입력</option>
+                                <option value="10000000">$10M</option>
+                                <option value="50000000">$50M</option>
+                                <option value="100000000">$100M</option>
+                                <option value="300000000">$300M</option>
+                                <option value="500000000" selected>$500M</option>
+                                <option value="700000000">$700M</option>
+                                <option value="1000000000">$1B</option>
+                                <option value="5000000000">$5B</option>
+                            </select>
+                            <input type="number" id="fdv-custom-usd" placeholder="FDV 직접 입력" style="display: none;">
+                        </div>
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="delegation-usd">위임량</label>
+                        <input type="number" id="delegation-usd" value="500000" min="0" step="1000">
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="apy-usd">APY</label>
+                        <input type="number" id="apy-usd" value="5" min="0" max="100" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="commission-usd">커미션</label>
+                        <input type="number" id="commission-usd" value="10" min="0" max="100" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">연간 수익:</span>
+                        <span class="result-value" id="yearly-profit-usd">$0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">월간 수익:</span>
+                        <span class="result-value" id="monthly-profit-usd">$0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">실제 APY:</span>
+                        <span class="result-value" id="actual-apy-usd">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 토큰 기반 계산기 -->
+            <div id="token-calculator" class="calculator" style="display: none;">
+                <h3>토큰 기반 수익 계산</h3>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="fdv-select-token">FDV</label>
+                        <div class="fdv-input-container">
+                            <select id="fdv-select-token">
+                                <option value="custom">직접 입력</option>
+                                <option value="10000000">$10M</option>
+                                <option value="50000000">$50M</option>
+                                <option value="100000000">$100M</option>
+                                <option value="300000000">$300M</option>
+                                <option value="500000000" selected>$500M</option>
+                                <option value="700000000">$700M</option>
+                                <option value="1000000000">$1B</option>
+                                <option value="5000000000">$5B</option>
+                            </select>
+                            <input type="number" id="fdv-custom-token" placeholder="FDV 직접 입력" style="display: none;">
+                        </div>
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="total-supply-select">총 발행량</label>
+                        <div class="fdv-input-container">
+                            <select id="total-supply-select">
+                                <option value="custom">직접 입력</option>
+                                <option value="10000000">10M</option>
+                                <option value="50000000">50M</option>
+                                <option value="100000000">100M</option>
+                                <option value="1000000000" selected>1B</option>
+                                <option value="10000000000">10B</option>
+                            </select>
+                            <input type="number" id="total-supply-custom" placeholder="총 발행량 직접 입력" style="display: none;">
+                        </div>
+                        <span class="unit">토큰</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="delegation-token">위임량 (토큰)</label>
+                        <input type="text" id="delegation-token" value="500,000" class="number-input" data-original-value="500000">
+                        <span class="unit">토큰</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="apy-token">APY</label>
+                        <input type="number" id="apy-token" value="5" min="0" max="100" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="commission-token">커미션</label>
+                        <input type="number" id="commission-token" value="10" min="0" max="100" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">연간 수익:</span>
+                        <span class="result-value" id="yearly-profit-token">$0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">월간 수익:</span>
+                        <span class="result-value" id="monthly-profit-token">$0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">실제 APY:</span>
+                        <span class="result-value" id="actual-apy-token">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="calculator-section">
+            <h2>2. 목표 수익 달성 시나리오 분석기</h2>
+            <p>목표 연 수익을 달성하기 위한 다양한 조건 조합들을 분석해보세요.</p>
+            
+            <!-- 1단계: 목표 연 수익 설정 -->
+            <div class="step-section">
+                <h3>1단계: 목표 연 수익 설정</h3>
+                <div class="target-profit-section">
+                    <div class="input-group">
+                        <label for="target-profit-select">목표 연 수익</label>
+                        <div class="profit-input-container">
+                            <select id="target-profit-select">
+                                <option value="custom">직접 입력</option>
+                                <option value="5000">$5,000</option>
+                                <option value="10000">$10,000</option>
+                                <option value="15000">$15,000</option>
+                                <option value="20000">$20,000</option>
+                                <option value="25000">$25,000</option>
+                                <option value="30000">$30,000</option>
+                                <option value="50000">$50,000</option>
+                                <option value="100000">$100,000</option>
+                            </select>
+                            <input type="number" id="target-profit-custom" placeholder="목표 수익 직접 입력" style="display: none;">
+                        </div>
+                        <span class="unit">USD</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2단계: FDV, 총 발행량 입력 -->
+            <div class="step-section">
+                <h3>2단계: 예상 FDV 및 총 발행량 입력</h3>
+                <div class="fdv-supply-section">
+                    <div class="input-group">
+                        <label for="input-fdv">FDV</label>
+                        <input type="number" id="input-fdv" placeholder="예: 500000000" min="1">
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="input-total-supply">총 발행량</label>
+                        <input type="number" id="input-total-supply" placeholder="예: 1000000000" min="1">
+                        <span class="unit">토큰</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3단계: 시나리오 생성 및 결과 -->
+            <div class="step-section">
+                <h3>3단계: 시나리오 생성 및 결과</h3>
+                <button id="generate-scenarios" class="btn-primary">시나리오 생성</button>
+                <div class="scenarios-container">
+                    <div class="scenarios-header">
+                        <h4>목표 수익 달성 시나리오</h4>
+                    </div>
+                    <div class="scenarios-grid" id="scenarios-grid">
+                        <div class="placeholder-message">
+                            목표 수익, FDV, 총 발행량을 입력하고 "시나리오 생성" 버튼을 클릭하세요
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

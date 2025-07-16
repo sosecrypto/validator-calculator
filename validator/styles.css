@@ -1,0 +1,493 @@
+/* 기본 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* 계산기 섹션 */
+.calculator-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.calculator-section h2 {
+    color: #2d3748;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+.calculator-section p {
+    color: #718096;
+    margin-bottom: 25px;
+}
+
+/* 케이스 선택기 */
+.case-selector {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f7fafc;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+}
+
+.case-selector label {
+    font-weight: 600;
+    color: #4a5568;
+    margin-right: 15px;
+}
+
+.case-selector select {
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+.case-selector select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* 계산기 */
+.calculator {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 25px;
+    border: 2px solid #e9ecef;
+}
+
+.calculator h3 {
+    color: #495057;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+/* 입력 그리드 */
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.input-group input,
+.input-group select {
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-group .unit {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* FDV 입력 컨테이너 */
+.fdv-input-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.fdv-input-container select,
+.fdv-input-container input {
+    width: 100%;
+}
+
+.fdv-input-container input {
+    margin-top: 8px;
+    transition: all 0.3s ease;
+}
+
+/* 수익 입력 컨테이너 */
+.profit-input-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.profit-input-container select,
+.profit-input-container input {
+    width: 100%;
+}
+
+.profit-input-container input {
+    margin-top: 8px;
+    transition: all 0.3s ease;
+}
+
+/* 결과 섹션 */
+.results {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid #e2e8f0;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.result-value {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+/* 단계 섹션 */
+.step-section {
+    margin-bottom: 30px;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+}
+
+.step-section h3 {
+    color: #495057;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+}
+
+.step-section h3::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #667eea;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+/* 목표 수익 섹션 */
+.target-profit-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.target-profit-section .input-group {
+    max-width: 400px;
+    width: 100%;
+}
+
+/* 2단계 FDV/총발행량 입력 스타일 */
+.fdv-supply-section {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.fdv-supply-section .input-group {
+    flex: 1;
+}
+
+/* 3단계 버튼 및 결과 스타일 */
+#generate-scenarios {
+    display: block;
+    margin: 0 auto 24px auto;
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.08);
+    transition: background 0.2s;
+}
+
+#generate-scenarios:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+}
+
+.scenarios-header {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.scenarios-container {
+    margin-top: 0;
+}
+
+/* 분석 옵션 */
+.analysis-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.option-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.option-group select {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+.option-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.scenarios-container {
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.scenarios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.scenarios-header h4 {
+    color: #495057;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.scenarios-grid {
+    padding: 20px;
+    min-height: 200px;
+}
+
+.placeholder-message {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.scenario-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.scenario-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+}
+
+.scenario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.scenario-title {
+    font-weight: 600;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.scenario-type {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.scenario-type.conservative {
+    background: #d4edda;
+    color: #155724;
+}
+
+.scenario-type.moderate {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.scenario-type.aggressive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.scenario-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.scenario-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.scenario-label {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.scenario-value {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.scenario-results {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.result-item {
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.result-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.result-value {
+    font-weight: 600;
+    color: #495057;
+    font-size: 1rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .calculator-section {
+        padding: 20px;
+    }
+    
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .fdv-supply-section {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .scenario-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .scenario-results {
+        grid-template-columns: repeat(2, 1fr);
+    }
+} 
