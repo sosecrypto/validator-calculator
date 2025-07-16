@@ -457,13 +457,27 @@ const eventListeners = {
         }
         
         if (filteredScenarios.length === 0) {
+            // 필터 조건 분석
+            const activeFilters = [];
+            if (filters.delegation.type !== 'all') activeFilters.push('위임량');
+            if (filters.apy.type !== 'all') activeFilters.push('APY');
+            if (filters.commission.type !== 'all') activeFilters.push('커미션');
+            
+            let message = '조건에 맞는 시나리오가 없습니다.';
+            if (activeFilters.length > 0) {
+                message += `<br><strong>활성 필터:</strong> ${activeFilters.join(', ')}`;
+                message += '<br>필터 조건을 완화하거나 "모든 수량/APY/비율"로 변경해보세요.';
+            } else {
+                message += '<br>시나리오를 다시 생성해보세요.';
+            }
+            
             elements.scenariosGrid.innerHTML = `
                 <div class="placeholder-message">
                     <i class="fas fa-search"></i>
-                    <p>조건에 맞는 시나리오가 없습니다. 필터 조건을 완화해보세요.</p>
+                    <p>${message}</p>
                 </div>
             `;
-            console.log('시나리오 없음 - 플레이스홀더 표시');
+            console.log('시나리오 없음 - 플레이스홀더 표시:', { activeFilters });
             return;
         }
         
@@ -610,11 +624,18 @@ const eventListeners = {
             }
         }
         
-        // APY 필터
+        // APY 필터 - 더 유연한 매칭
         if (filters.apy.type !== 'all') {
             if (filters.apy.type === 'specific') {
-                if (!utils.isApproximatelyEqual(scenario.apy, filters.apy.specific, 0.01)) {
-                    console.log('APY 특정값 필터 불일치:', { scenario: scenario.apy, filter: filters.apy.specific });
+                // 특정 APY의 경우 ±0.5% 허용 오차 적용
+                const tolerance = Math.max(filters.apy.specific * 0.005, 0.1);
+                if (Math.abs(scenario.apy - filters.apy.specific) > tolerance) {
+                    console.log('APY 특정값 필터 불일치:', { 
+                        scenario: scenario.apy, 
+                        filter: filters.apy.specific, 
+                        tolerance: tolerance,
+                        difference: Math.abs(scenario.apy - filters.apy.specific)
+                    });
                     return false;
                 }
             } else if (filters.apy.type === 'range') {
@@ -631,11 +652,18 @@ const eventListeners = {
             }
         }
         
-        // 커미션 필터
+        // 커미션 필터 - 더 유연한 매칭
         if (filters.commission.type !== 'all') {
             if (filters.commission.type === 'specific') {
-                if (!utils.isApproximatelyEqual(scenario.commission, filters.commission.specific, 0.01)) {
-                    console.log('커미션 특정값 필터 불일치:', { scenario: scenario.commission, filter: filters.commission.specific });
+                // 특정 커미션의 경우 ±0.5% 허용 오차 적용
+                const tolerance = Math.max(filters.commission.specific * 0.005, 0.1);
+                if (Math.abs(scenario.commission - filters.commission.specific) > tolerance) {
+                    console.log('커미션 특정값 필터 불일치:', { 
+                        scenario: scenario.commission, 
+                        filter: filters.commission.specific, 
+                        tolerance: tolerance,
+                        difference: Math.abs(scenario.commission - filters.commission.specific)
+                    });
                     return false;
                 }
             } else if (filters.commission.type === 'range') {
@@ -759,16 +787,20 @@ const scenarioGenerator = {
             150000000, 200000000, 250000000, 300000000, 400000000, 500000000
         ];
         
-        // 더 세밀한 APY 범위
+        // 더 세밀한 APY 범위 (필터에서 자주 사용되는 값들을 우선 포함)
         const apyValues = [
-            1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 25, 28, 30, 35, 40, 45, 50
+            // 자주 사용되는 값들
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 20, 25, 30, 40, 50,
+            // 세밀한 값들
+            1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 11, 13, 14, 16, 17, 19, 22, 28, 35, 45
         ];
         
-        // 더 세밀한 커미션 범위
+        // 더 세밀한 커미션 범위 (필터에서 자주 사용되는 값들을 우선 포함)
         const commissionValues = [
-            0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 25, 28, 30, 35, 40, 45, 50
+            // 자주 사용되는 값들
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 20, 25, 30, 40, 50,
+            // 세밀한 값들
+            0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 11, 13, 14, 16, 17, 19, 22, 28, 35, 45
         ];
         
         console.log('시나리오 생성 파라미터:', {
