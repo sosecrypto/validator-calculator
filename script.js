@@ -613,7 +613,7 @@ const eventListeners = {
         // APY 필터
         if (filters.apy.type !== 'all') {
             if (filters.apy.type === 'specific') {
-                if (!utils.isApproximatelyEqual(scenario.apy, filters.apy.specific, 0.1)) {
+                if (!utils.isApproximatelyEqual(scenario.apy, filters.apy.specific, 0.01)) {
                     console.log('APY 특정값 필터 불일치:', { scenario: scenario.apy, filter: filters.apy.specific });
                     return false;
                 }
@@ -634,7 +634,7 @@ const eventListeners = {
         // 커미션 필터
         if (filters.commission.type !== 'all') {
             if (filters.commission.type === 'specific') {
-                if (!utils.isApproximatelyEqual(scenario.commission, filters.commission.specific, 0.1)) {
+                if (!utils.isApproximatelyEqual(scenario.commission, filters.commission.specific, 0.01)) {
                     console.log('커미션 특정값 필터 불일치:', { scenario: scenario.commission, filter: filters.commission.specific });
                     return false;
                 }
@@ -745,16 +745,31 @@ const scenarioGenerator = {
         console.log('시나리오 생성:', { targetProfit, tokenPrice });
         const scenarios = [];
         
-        // 더 세밀한 위임량 범위 설정
+        // 더 세밀하고 다양한 위임량 범위 설정
         const delegationValues = [
-            100000, 200000, 300000, 400000, 500000,
-            750000, 1000000, 1500000, 2000000, 2500000, 3000000, 4000000, 5000000,
-            7500000, 10000000, 15000000, 20000000, 25000000, 30000000, 40000000, 50000000,
-            75000000, 100000000
+            // 소액 위임 (10K ~ 100K)
+            10000, 25000, 50000, 75000, 100000,
+            // 중간 위임 (100K ~ 1M)
+            150000, 200000, 300000, 400000, 500000, 600000, 750000, 900000, 1000000,
+            // 대액 위임 (1M ~ 10M)
+            1500000, 2000000, 2500000, 3000000, 4000000, 5000000, 6000000, 7500000, 8000000, 9000000, 10000000,
+            // 대형 위임 (10M ~ 100M)
+            15000000, 20000000, 25000000, 30000000, 40000000, 50000000, 60000000, 75000000, 80000000, 90000000, 100000000,
+            // 초대형 위임 (100M+)
+            150000000, 200000000, 250000000, 300000000, 400000000, 500000000
         ];
         
-        const apyValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 20];
-        const commissionValues = [0, 2, 5, 8, 10, 12, 15, 18, 20, 25, 30];
+        // 더 세밀한 APY 범위
+        const apyValues = [
+            1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 25, 28, 30, 35, 40, 45, 50
+        ];
+        
+        // 더 세밀한 커미션 범위
+        const commissionValues = [
+            0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 25, 28, 30, 35, 40, 45, 50
+        ];
         
         console.log('시나리오 생성 파라미터:', {
             delegationValues: delegationValues.length,
@@ -763,14 +778,16 @@ const scenarioGenerator = {
             totalCombinations: delegationValues.length * apyValues.length * commissionValues.length
         });
         
+        // 허용 오차를 더 넓게 설정 (목표 수익의 5% 또는 최소 $50)
+        const tolerance = Math.max(targetProfit * 0.05, 50);
+        
         for (const delegation of delegationValues) {
             for (const apy of apyValues) {
                 for (const commission of commissionValues) {
                     const delegationValue = calculator.calculateDelegationValue(delegation, tokenPrice);
                     const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission);
                     
-                    // 목표 수익과 비교 (더 정확한 허용 오차)
-                    const tolerance = Math.max(targetProfit * 0.01, 10); // 1% 또는 최소 $10
+                    // 목표 수익과 비교 (더 넓은 허용 오차)
                     if (Math.abs(yearlyProfit - targetProfit) <= tolerance) {
                         const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission);
                         scenarios.push({
