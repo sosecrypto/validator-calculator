@@ -469,34 +469,44 @@ const eventListeners = {
         
         console.log('시나리오 테이블 생성 중...');
         
-        const tableHTML = `
+        // 테이블 헤더 생성
+        const tableHeader = `
             <div class="scenarios-table-header">
                 <h4>목표 수익 달성 시나리오 (${filteredScenarios.length}개)</h4>
             </div>
-            <table class="scenarios-table">
-                <thead>
-                    <tr>
-                        <th>위임량 (토큰)</th>
-                        <th>위임 가치 (USD)</th>
-                        <th>APY</th>
-                        <th>커미션</th>
-                        <th>월 수익</th>
-                        <th>연 수익</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${filteredScenarios.map(scenario => `
+        `;
+        
+        // 테이블 바디 생성
+        const tableRows = filteredScenarios.map(scenario => `
+            <tr>
+                <td>${utils.formatNumber(scenario.delegation)}</td>
+                <td>${utils.formatCurrency(scenario.delegationValue)}</td>
+                <td>${utils.formatPercentage(scenario.apy)}</td>
+                <td>${utils.formatPercentage(scenario.commission)}</td>
+                <td>${utils.formatCurrency(scenario.monthlyProfit)}</td>
+                <td>${utils.formatCurrency(scenario.yearlyProfit)}</td>
+            </tr>
+        `).join('');
+        
+        const tableHTML = `
+            ${tableHeader}
+            <div class="table-container">
+                <table class="scenarios-table">
+                    <thead>
                         <tr>
-                            <td>${utils.formatNumber(scenario.delegation)}</td>
-                            <td>${utils.formatCurrency(scenario.delegationValue)}</td>
-                            <td>${utils.formatPercentage(scenario.apy)}</td>
-                            <td>${utils.formatPercentage(scenario.commission)}</td>
-                            <td>${utils.formatCurrency(scenario.monthlyProfit)}</td>
-                            <td>${utils.formatCurrency(scenario.yearlyProfit)}</td>
+                            <th>위임량 (토큰)</th>
+                            <th>위임 가치 (USD)</th>
+                            <th>APY</th>
+                            <th>커미션</th>
+                            <th>월 수익</th>
+                            <th>연 수익</th>
                         </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </div>
         `;
         
         elements.scenariosGrid.innerHTML = tableHTML;
