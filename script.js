@@ -1,70 +1,84 @@
 // DeSpread 밸리데이터 수익 계산기 - 최적화된 JavaScript
 
+// DOM 로딩 확인 함수
+const isDOMReady = () => {
+    return document.readyState === 'loading' ? false : true;
+};
+
 // DOM 요소 캐싱
-const elements = {
-    // 케이스 선택
-    caseBtns: document.querySelectorAll('.case-btn'),
-    caseContents: document.querySelectorAll('.case-content'),
+let elements = {};
+
+// DOM 요소 초기화
+const initializeElements = () => {
+    console.log('DOM 요소 초기화 중...');
     
-    // 토큰 기반 계산기
-    fdvSelectToken: document.getElementById('fdv-select-token'),
-    fdvCustomToken: document.getElementById('fdv-custom-token'),
-    totalSupplySelect: document.getElementById('total-supply-select'),
-    totalSupplyCustom: document.getElementById('total-supply-custom'),
-    delegationToken: document.getElementById('delegation-token'),
-    apyToken: document.getElementById('apy-token'),
-    commissionToken: document.getElementById('commission-token'),
-    tokenPrice: document.getElementById('token-price'),
-    delegationUsdValue: document.getElementById('delegation-usd-value'),
-    monthlyProfitToken: document.getElementById('monthly-profit-token'),
-    yearlyProfitToken: document.getElementById('yearly-profit-token'),
-    actualApyToken: document.getElementById('actual-apy-token'),
+    elements = {
+        // 케이스 선택
+        caseBtns: document.querySelectorAll('.case-btn'),
+        caseContents: document.querySelectorAll('.case-content'),
+        
+        // 토큰 기반 계산기
+        fdvSelectToken: document.getElementById('fdv-select-token'),
+        fdvCustomToken: document.getElementById('fdv-custom-token'),
+        totalSupplySelect: document.getElementById('total-supply-select'),
+        totalSupplyCustom: document.getElementById('total-supply-custom'),
+        delegationToken: document.getElementById('delegation-token'),
+        apyToken: document.getElementById('apy-token'),
+        commissionToken: document.getElementById('commission-token'),
+        tokenPrice: document.getElementById('token-price'),
+        delegationUsdValue: document.getElementById('delegation-usd-value'),
+        monthlyProfitToken: document.getElementById('monthly-profit-token'),
+        yearlyProfitToken: document.getElementById('yearly-profit-token'),
+        actualApyToken: document.getElementById('actual-apy-token'),
+        
+        // 달러 기반 계산기
+        fdvSelectUsd: document.getElementById('fdv-select-usd'),
+        fdvCustomUsd: document.getElementById('fdv-custom-usd'),
+        delegationUsd: document.getElementById('delegation-usd'),
+        apyUsd: document.getElementById('apy-usd'),
+        commissionUsd: document.getElementById('commission-usd'),
+        monthlyProfitUsd: document.getElementById('monthly-profit-usd'),
+        yearlyProfitUsd: document.getElementById('yearly-profit-usd'),
+        actualApyUsd: document.getElementById('actual-apy-usd'),
+        
+        // 시나리오 분석기
+        targetProfitType: document.getElementById('target-profit-type'),
+        targetProfitSpecific: document.getElementById('target-profit-specific'),
+        targetProfitRange: document.getElementById('target-profit-range'),
+        targetProfitMin: document.getElementById('target-profit-min'),
+        targetProfitMax: document.getElementById('target-profit-max'),
+        targetProfitCustom: document.getElementById('target-profit-custom'),
+        inputFdvSelect: document.getElementById('input-fdv-select'),
+        inputFdvCustom: document.getElementById('input-fdv-custom'),
+        inputTotalSupplySelect: document.getElementById('input-total-supply-select'),
+        inputTotalSupplyCustom: document.getElementById('input-total-supply-custom'),
+        generateScenarios: document.getElementById('generate-scenarios'),
+        scenariosGrid: document.getElementById('scenarios-grid'),
+        filterSection: document.getElementById('filter-section'),
+        applyFilter: document.getElementById('apply-filter'),
+        clearFilter: document.getElementById('clear-filter'),
+        
+        // 필터 요소들
+        filterDelegationType: document.getElementById('filter-delegation-type'),
+        filterDelegationRange: document.getElementById('filter-delegation-range'),
+        filterDelegationCustom: document.getElementById('filter-delegation-custom'),
+        filterDelegationMin: document.getElementById('filter-delegation-min'),
+        filterDelegationMax: document.getElementById('filter-delegation-max'),
+        filterApyType: document.getElementById('filter-apy-type'),
+        filterApySpecific: document.getElementById('filter-apy-specific'),
+        filterApyRange: document.getElementById('filter-apy-range'),
+        filterApyCustom: document.getElementById('filter-apy-custom'),
+        filterApyMin: document.getElementById('filter-apy-min'),
+        filterApyMax: document.getElementById('filter-apy-max'),
+        filterCommissionType: document.getElementById('filter-commission-type'),
+        filterCommissionSpecific: document.getElementById('filter-commission-specific'),
+        filterCommissionRange: document.getElementById('filter-commission-range'),
+        filterCommissionCustom: document.getElementById('filter-commission-custom'),
+        filterCommissionMin: document.getElementById('filter-commission-min'),
+        filterCommissionMax: document.getElementById('filter-commission-max')
+    };
     
-    // 달러 기반 계산기
-    fdvSelectUsd: document.getElementById('fdv-select-usd'),
-    fdvCustomUsd: document.getElementById('fdv-custom-usd'),
-    delegationUsd: document.getElementById('delegation-usd'),
-    apyUsd: document.getElementById('apy-usd'),
-    commissionUsd: document.getElementById('commission-usd'),
-    monthlyProfitUsd: document.getElementById('monthly-profit-usd'),
-    yearlyProfitUsd: document.getElementById('yearly-profit-usd'),
-    actualApyUsd: document.getElementById('actual-apy-usd'),
-    
-    // 시나리오 분석기
-    targetProfitType: document.getElementById('target-profit-type'),
-    targetProfitSpecific: document.getElementById('target-profit-specific'),
-    targetProfitRange: document.getElementById('target-profit-range'),
-    targetProfitMin: document.getElementById('target-profit-min'),
-    targetProfitMax: document.getElementById('target-profit-max'),
-    targetProfitCustom: document.getElementById('target-profit-custom'),
-    inputFdvSelect: document.getElementById('input-fdv-select'),
-    inputFdvCustom: document.getElementById('input-fdv-custom'),
-    inputTotalSupplySelect: document.getElementById('input-total-supply-select'),
-    inputTotalSupplyCustom: document.getElementById('input-total-supply-custom'),
-    generateScenarios: document.getElementById('generate-scenarios'),
-    scenariosGrid: document.getElementById('scenarios-grid'),
-    filterSection: document.getElementById('filter-section'),
-    applyFilter: document.getElementById('apply-filter'),
-    clearFilter: document.getElementById('clear-filter'),
-    
-    // 필터 요소들
-    filterDelegationType: document.getElementById('filter-delegation-type'),
-    filterDelegationRange: document.getElementById('filter-delegation-range'),
-    filterDelegationCustom: document.getElementById('filter-delegation-custom'),
-    filterDelegationMin: document.getElementById('filter-delegation-min'),
-    filterDelegationMax: document.getElementById('filter-delegation-max'),
-    filterApyType: document.getElementById('filter-apy-type'),
-    filterApySpecific: document.getElementById('filter-apy-specific'),
-    filterApyRange: document.getElementById('filter-apy-range'),
-    filterApyCustom: document.getElementById('filter-apy-custom'),
-    filterApyMin: document.getElementById('filter-apy-min'),
-    filterApyMax: document.getElementById('filter-apy-max'),
-    filterCommissionType: document.getElementById('filter-commission-type'),
-    filterCommissionSpecific: document.getElementById('filter-commission-specific'),
-    filterCommissionRange: document.getElementById('filter-commission-range'),
-    filterCommissionCustom: document.getElementById('filter-commission-custom'),
-    filterCommissionMin: document.getElementById('filter-commission-min'),
-    filterCommissionMax: document.getElementById('filter-commission-max')
+    console.log('DOM 요소 초기화 완료:', elements);
 };
 
 // 전역 변수
@@ -146,45 +160,98 @@ const calculator = {
 // 이벤트 리스너 설정
 const eventListeners = {
     init: () => {
+        console.log('이벤트 리스너 초기화 시작...');
+        
+        // DOM 요소가 모두 로드되었는지 확인
+        if (!elements.caseBtns || elements.caseBtns.length === 0) {
+            console.error('DOM 요소를 찾을 수 없습니다. DOM이 완전히 로드되지 않았을 수 있습니다.');
+            return;
+        }
+        
         // 케이스 선택 이벤트
         elements.caseBtns.forEach(btn => {
             btn.addEventListener('click', () => {
+                console.log('케이스 버튼 클릭:', btn.dataset.case);
                 const targetCase = btn.dataset.case;
                 eventListeners.switchCase(targetCase);
             });
         });
         
         // 토큰 기반 계산기 이벤트
-        elements.fdvSelectToken.addEventListener('change', eventListeners.handleFdvChange);
-        elements.totalSupplySelect.addEventListener('change', eventListeners.handleTotalSupplyChange);
-        elements.delegationToken.addEventListener('input', eventListeners.handleTokenCalculation);
-        elements.apyToken.addEventListener('input', eventListeners.handleTokenCalculation);
-        elements.commissionToken.addEventListener('input', eventListeners.handleTokenCalculation);
+        if (elements.fdvSelectToken) {
+            elements.fdvSelectToken.addEventListener('change', eventListeners.handleFdvChange);
+        }
+        if (elements.totalSupplySelect) {
+            elements.totalSupplySelect.addEventListener('change', eventListeners.handleTotalSupplyChange);
+        }
+        if (elements.delegationToken) {
+            elements.delegationToken.addEventListener('input', eventListeners.handleTokenCalculation);
+        }
+        if (elements.apyToken) {
+            elements.apyToken.addEventListener('input', eventListeners.handleTokenCalculation);
+        }
+        if (elements.commissionToken) {
+            elements.commissionToken.addEventListener('input', eventListeners.handleTokenCalculation);
+        }
         
         // 달러 기반 계산기 이벤트
-        elements.fdvSelectUsd.addEventListener('change', eventListeners.handleFdvUsdChange);
-        elements.delegationUsd.addEventListener('input', eventListeners.handleUsdCalculation);
-        elements.apyUsd.addEventListener('input', eventListeners.handleUsdCalculation);
-        elements.commissionUsd.addEventListener('input', eventListeners.handleUsdCalculation);
+        if (elements.fdvSelectUsd) {
+            elements.fdvSelectUsd.addEventListener('change', eventListeners.handleFdvUsdChange);
+        }
+        if (elements.delegationUsd) {
+            elements.delegationUsd.addEventListener('input', eventListeners.handleUsdCalculation);
+        }
+        if (elements.apyUsd) {
+            elements.apyUsd.addEventListener('input', eventListeners.handleUsdCalculation);
+        }
+        if (elements.commissionUsd) {
+            elements.commissionUsd.addEventListener('input', eventListeners.handleUsdCalculation);
+        }
         
         // 시나리오 분석기 이벤트
-        elements.targetProfitType.addEventListener('change', eventListeners.handleTargetProfitTypeChange);
-        elements.targetProfitSpecific.addEventListener('change', eventListeners.handleTargetProfitChange);
-        elements.targetProfitMin.addEventListener('input', eventListeners.handleTargetProfitChange);
-        elements.targetProfitMax.addEventListener('input', eventListeners.handleTargetProfitChange);
-        elements.targetProfitCustom.addEventListener('input', eventListeners.handleTargetProfitChange);
-        elements.inputFdvSelect.addEventListener('change', eventListeners.handleInputFdvChange);
-        elements.inputTotalSupplySelect.addEventListener('change', eventListeners.handleInputTotalSupplyChange);
-        elements.generateScenarios.addEventListener('click', eventListeners.generateScenarios);
+        if (elements.targetProfitType) {
+            elements.targetProfitType.addEventListener('change', eventListeners.handleTargetProfitTypeChange);
+        }
+        if (elements.targetProfitSpecific) {
+            elements.targetProfitSpecific.addEventListener('change', eventListeners.handleTargetProfitChange);
+        }
+        if (elements.targetProfitMin) {
+            elements.targetProfitMin.addEventListener('input', eventListeners.handleTargetProfitChange);
+        }
+        if (elements.targetProfitMax) {
+            elements.targetProfitMax.addEventListener('input', eventListeners.handleTargetProfitChange);
+        }
+        if (elements.targetProfitCustom) {
+            elements.targetProfitCustom.addEventListener('input', eventListeners.handleTargetProfitChange);
+        }
+        if (elements.inputFdvSelect) {
+            elements.inputFdvSelect.addEventListener('change', eventListeners.handleInputFdvChange);
+        }
+        if (elements.inputTotalSupplySelect) {
+            elements.inputTotalSupplySelect.addEventListener('change', eventListeners.handleInputTotalSupplyChange);
+        }
+        if (elements.generateScenarios) {
+            elements.generateScenarios.addEventListener('click', eventListeners.generateScenarios);
+        }
         
         // 필터 이벤트
-        elements.applyFilter.addEventListener('click', eventListeners.applyFilter);
-        elements.clearFilter.addEventListener('click', eventListeners.clearFilter);
+        if (elements.applyFilter) {
+            elements.applyFilter.addEventListener('click', eventListeners.applyFilter);
+        }
+        if (elements.clearFilter) {
+            elements.clearFilter.addEventListener('click', eventListeners.clearFilter);
+        }
         
         // 필터 타입 변경 이벤트
-        elements.filterDelegationType.addEventListener('change', eventListeners.handleFilterTypeChange);
-        elements.filterApyType.addEventListener('change', eventListeners.handleFilterTypeChange);
-        elements.filterCommissionType.addEventListener('change', eventListeners.handleFilterTypeChange);
+        if (elements.filterDelegationType) {
+            elements.filterDelegationType.addEventListener('change', eventListeners.handleFilterTypeChange);
+        }
+        if (elements.filterApyType) {
+            elements.filterApyType.addEventListener('change', eventListeners.handleFilterTypeChange);
+        }
+        if (elements.filterCommissionType) {
+            elements.filterCommissionType.addEventListener('change', eventListeners.handleFilterTypeChange);
+        }
         
         // 네비게이션 스크롤 이벤트
         window.addEventListener('scroll', eventListeners.handleScroll);
@@ -192,10 +259,13 @@ const eventListeners = {
         // 초기 계산 실행
         eventListeners.handleTokenCalculation();
         eventListeners.handleUsdCalculation();
+        
+        console.log('이벤트 리스너 초기화 완료');
     },
     
     // 케이스 전환
     switchCase: (targetCase) => {
+        console.log('케이스 전환:', targetCase);
         elements.caseBtns.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.case === targetCase);
         });
@@ -207,6 +277,7 @@ const eventListeners = {
     
     // FDV 변경 처리
     handleFdvChange: () => {
+        console.log('FDV 변경');
         const isCustom = elements.fdvSelectToken.value === 'custom';
         elements.fdvCustomToken.style.display = isCustom ? 'block' : 'none';
         eventListeners.handleTokenCalculation();
@@ -214,6 +285,7 @@ const eventListeners = {
     
     // 총 발행량 변경 처리
     handleTotalSupplyChange: () => {
+        console.log('총 발행량 변경');
         const isCustom = elements.totalSupplySelect.value === 'custom';
         elements.totalSupplyCustom.style.display = isCustom ? 'block' : 'none';
         eventListeners.handleTokenCalculation();
@@ -221,6 +293,7 @@ const eventListeners = {
     
     // 토큰 기반 계산 처리
     handleTokenCalculation: () => {
+        console.log('토큰 기반 계산 실행');
         const fdv = elements.fdvSelectToken.value === 'custom' 
             ? utils.parseInput(elements.fdvCustomToken.value) 
             : parseFloat(elements.fdvSelectToken.value);
@@ -230,6 +303,8 @@ const eventListeners = {
         const delegation = utils.parseInput(elements.delegationToken.value);
         const apy = parseFloat(elements.apyToken.value) || 0;
         const commission = parseFloat(elements.commissionToken.value) || 0;
+        
+        console.log('계산 값:', { fdv, totalSupply, delegation, apy, commission });
         
         if (fdv > 0 && totalSupply > 0) {
             const tokenPrice = calculator.calculateTokenPrice(fdv, totalSupply);
@@ -243,11 +318,14 @@ const eventListeners = {
             elements.monthlyProfitToken.textContent = utils.formatCurrency(monthlyProfit);
             elements.yearlyProfitToken.textContent = utils.formatCurrency(yearlyProfit);
             elements.actualApyToken.textContent = utils.formatPercentage(actualApy);
+            
+            console.log('계산 결과:', { tokenPrice, delegationValue, monthlyProfit, yearlyProfit, actualApy });
         }
     },
     
     // FDV USD 변경 처리
     handleFdvUsdChange: () => {
+        console.log('FDV USD 변경');
         const isCustom = elements.fdvSelectUsd.value === 'custom';
         elements.fdvCustomUsd.style.display = isCustom ? 'block' : 'none';
         eventListeners.handleUsdCalculation();
@@ -255,6 +333,7 @@ const eventListeners = {
     
     // USD 기반 계산 처리
     handleUsdCalculation: () => {
+        console.log('USD 기반 계산 실행');
         const delegationValue = parseFloat(elements.delegationUsd.value) || 0;
         const apy = parseFloat(elements.apyUsd.value) || 0;
         const commission = parseFloat(elements.commissionUsd.value) || 0;
@@ -272,6 +351,7 @@ const eventListeners = {
     
     // 목표 수익 타입 변경 처리
     handleTargetProfitTypeChange: () => {
+        console.log('목표 수익 타입 변경');
         const type = elements.targetProfitType.value;
         elements.targetProfitSpecific.style.display = type === 'specific' ? 'block' : 'none';
         elements.targetProfitRange.style.display = type === 'range' ? 'block' : 'none';
@@ -280,26 +360,32 @@ const eventListeners = {
     
     // 목표 수익 변경 처리
     handleTargetProfitChange: () => {
+        console.log('목표 수익 변경');
         // 시나리오 재생성 로직은 generateScenarios에서 처리
     },
     
     // 입력 FDV 변경 처리
     handleInputFdvChange: () => {
+        console.log('입력 FDV 변경');
         const isCustom = elements.inputFdvSelect.value === 'custom';
         elements.inputFdvCustom.style.display = isCustom ? 'block' : 'none';
     },
     
     // 입력 총 발행량 변경 처리
     handleInputTotalSupplyChange: () => {
+        console.log('입력 총 발행량 변경');
         const isCustom = elements.inputTotalSupplySelect.value === 'custom';
         elements.inputTotalSupplyCustom.style.display = isCustom ? 'block' : 'none';
     },
     
     // 시나리오 생성
     generateScenarios: () => {
+        console.log('시나리오 생성 시작');
         const targetProfit = eventListeners.getTargetProfit();
         const fdv = eventListeners.getInputFdv();
         const totalSupply = eventListeners.getInputTotalSupply();
+        
+        console.log('시나리오 생성 값:', { targetProfit, fdv, totalSupply });
         
         if (targetProfit <= 0 || fdv <= 0 || totalSupply <= 0) {
             alert('목표 수익, FDV, 총 발행량을 모두 입력해주세요.');
@@ -347,6 +433,7 @@ const eventListeners = {
     
     // 시나리오 표시
     displayScenarios: () => {
+        console.log('시나리오 표시:', filteredScenarios.length);
         if (filteredScenarios.length === 0) {
             elements.scenariosGrid.innerHTML = `
                 <div class="placeholder-message">
@@ -392,6 +479,7 @@ const eventListeners = {
     
     // 필터 적용
     applyFilter: () => {
+        console.log('필터 적용');
         const filters = eventListeners.getFilters();
         filteredScenarios = allScenarios.filter(scenario => {
             return eventListeners.matchesFilter(scenario, filters);
@@ -401,6 +489,7 @@ const eventListeners = {
     
     // 필터 초기화
     clearFilter: () => {
+        console.log('필터 초기화');
         filteredScenarios = [...allScenarios];
         eventListeners.resetFilters();
         eventListeners.displayScenarios();
@@ -481,6 +570,7 @@ const eventListeners = {
     
     // 필터 타입 변경 처리
     handleFilterTypeChange: () => {
+        console.log('필터 타입 변경');
         // 위임량 필터
         const delegationType = elements.filterDelegationType.value;
         elements.filterDelegationRange.style.display = delegationType === 'range' ? 'block' : 'none';
@@ -515,6 +605,7 @@ const eventListeners = {
 // 시나리오 생성기
 const scenarioGenerator = {
     generateScenarios: (targetProfit, tokenPrice) => {
+        console.log('시나리오 생성:', { targetProfit, tokenPrice });
         const scenarios = [];
         const delegationRanges = [
             [100000, 500000],
@@ -551,6 +642,7 @@ const scenarioGenerator = {
             }
         }
         
+        console.log('생성된 시나리오 수:', scenarios.length);
         return scenarios.sort((a, b) => a.delegation - b.delegation);
     }
 };
@@ -558,6 +650,7 @@ const scenarioGenerator = {
 // 팝업 관리
 const popupManager = {
     showFormulaPopup: (type) => {
+        console.log('팝업 표시:', type);
         const popupHTML = `
             <div class="popup-overlay active" id="formula-popup">
                 <div class="popup-content">
@@ -585,6 +678,7 @@ const popupManager = {
     },
     
     closePopup: () => {
+        console.log('팝업 닫기');
         const popup = document.getElementById('formula-popup');
         if (popup) {
             popup.remove();
@@ -633,7 +727,23 @@ const popupManager = {
 // 전역 함수로 노출
 window.showFormulaPopup = popupManager.showFormulaPopup;
 
-// 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    eventListeners.init();
-}); 
+// 초기화 함수
+const initializeApp = () => {
+    console.log('앱 초기화 시작...');
+    
+    // DOM이 완전히 로드될 때까지 대기
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM 로딩 완료');
+            initializeElements();
+            eventListeners.init();
+        });
+    } else {
+        console.log('DOM이 이미 로드됨');
+        initializeElements();
+        eventListeners.init();
+    }
+};
+
+// 앱 초기화 실행
+initializeApp(); 
