@@ -237,20 +237,38 @@ const eventListeners = {
         // 필터 이벤트
         if (elements.applyFilter) {
             elements.applyFilter.addEventListener('click', eventListeners.applyFilter);
+            console.log('필터 적용 버튼 이벤트 등록 완료');
+        } else {
+            console.error('필터 적용 버튼을 찾을 수 없습니다.');
         }
+        
         if (elements.clearFilter) {
             elements.clearFilter.addEventListener('click', eventListeners.clearFilter);
+            console.log('필터 초기화 버튼 이벤트 등록 완료');
+        } else {
+            console.error('필터 초기화 버튼을 찾을 수 없습니다.');
         }
         
         // 필터 타입 변경 이벤트
         if (elements.filterDelegationType) {
             elements.filterDelegationType.addEventListener('change', eventListeners.handleFilterTypeChange);
+            console.log('위임량 필터 타입 이벤트 등록 완료');
+        } else {
+            console.error('위임량 필터 타입을 찾을 수 없습니다.');
         }
+        
         if (elements.filterApyType) {
             elements.filterApyType.addEventListener('change', eventListeners.handleFilterTypeChange);
+            console.log('APY 필터 타입 이벤트 등록 완료');
+        } else {
+            console.error('APY 필터 타입을 찾을 수 없습니다.');
         }
+        
         if (elements.filterCommissionType) {
             elements.filterCommissionType.addEventListener('change', eventListeners.handleFilterTypeChange);
+            console.log('커미션 필터 타입 이벤트 등록 완료');
+        } else {
+            console.error('커미션 필터 타입을 찾을 수 없습니다.');
         }
         
         // 네비게이션 스크롤 이벤트
@@ -457,11 +475,12 @@ const eventListeners = {
         }
         
         if (filteredScenarios.length === 0) {
-            // 필터 조건 분석
+            // 현재 필터 상태 가져오기
+            const currentFilters = eventListeners.getFilters();
             const activeFilters = [];
-            if (filters.delegation.type !== 'all') activeFilters.push('위임량');
-            if (filters.apy.type !== 'all') activeFilters.push('APY');
-            if (filters.commission.type !== 'all') activeFilters.push('커미션');
+            if (currentFilters.delegation.type !== 'all') activeFilters.push('위임량');
+            if (currentFilters.apy.type !== 'all') activeFilters.push('APY');
+            if (currentFilters.commission.type !== 'all') activeFilters.push('커미션');
             
             let message = '조건에 맞는 시나리오가 없습니다.';
             if (activeFilters.length > 0) {
@@ -538,6 +557,7 @@ const eventListeners = {
                 filterApyType: !!elements.filterApyType,
                 filterCommissionType: !!elements.filterCommissionType
             });
+            alert('필터 요소를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
             return;
         }
         
@@ -546,21 +566,29 @@ const eventListeners = {
         
         if (allScenarios.length === 0) {
             console.log('필터링할 시나리오가 없습니다.');
+            alert('먼저 시나리오를 생성해주세요.');
             return;
         }
         
+        // 필터 적용 전 시나리오 수 로그
+        console.log('필터 적용 전 시나리오 수:', allScenarios.length);
+        
         filteredScenarios = allScenarios.filter(scenario => {
             const matches = eventListeners.matchesFilter(scenario, filters);
-            console.log('시나리오 필터링:', {
-                scenario: { delegation: scenario.delegation, apy: scenario.apy, commission: scenario.commission },
-                matches
-            });
+            if (matches) {
+                console.log('시나리오 매칭:', {
+                    delegation: scenario.delegation,
+                    apy: scenario.apy,
+                    commission: scenario.commission
+                });
+            }
             return matches;
         });
         
         console.log('필터 적용 결과:', {
             totalScenarios: allScenarios.length,
-            filteredScenarios: filteredScenarios.length
+            filteredScenarios: filteredScenarios.length,
+            filters: filters
         });
         
         eventListeners.displayScenarios();
@@ -569,10 +597,17 @@ const eventListeners = {
     // 필터 초기화
     clearFilter: () => {
         console.log('필터 초기화 시작');
+        
+        if (allScenarios.length === 0) {
+            console.log('초기화할 시나리오가 없습니다.');
+            alert('먼저 시나리오를 생성해주세요.');
+            return;
+        }
+        
         filteredScenarios = [...allScenarios];
         eventListeners.resetFilters();
         eventListeners.displayScenarios();
-        console.log('필터 초기화 완료');
+        console.log('필터 초기화 완료 - 시나리오 수:', filteredScenarios.length);
     },
     
     // 필터 가져오기
@@ -698,7 +733,19 @@ const eventListeners = {
             elements.filterCommissionType.value = 'all';
         }
         
-        eventListeners.handleFilterTypeChange();
+        // 모든 필터 입력 필드 숨기기
+        const filterElements = [
+            'filterDelegationRange', 'filterDelegationCustom',
+            'filterApySpecific', 'filterApyRange', 'filterApyCustom',
+            'filterCommissionSpecific', 'filterCommissionRange', 'filterCommissionCustom'
+        ];
+        
+        filterElements.forEach(elementId => {
+            if (elements[elementId]) {
+                elements[elementId].style.display = 'none';
+            }
+        });
+        
         console.log('필터 초기화 완료');
     },
     
