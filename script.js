@@ -392,9 +392,25 @@ const eventListeners = {
             return;
         }
         
+        // 토큰 가격 계산
         const tokenPrice = calculator.calculateTokenPrice(fdv, totalSupply);
+        console.log('계산된 토큰 가격:', tokenPrice);
+        
+        if (tokenPrice <= 0) {
+            alert('토큰 가격이 0 이하입니다. FDV와 총 발행량을 확인해주세요.');
+            return;
+        }
+        
+        // 시나리오 생성
         allScenarios = scenarioGenerator.generateScenarios(targetProfit, tokenPrice);
         filteredScenarios = [...allScenarios];
+        
+        console.log('생성된 시나리오:', allScenarios);
+        
+        if (allScenarios.length === 0) {
+            alert('목표 수익을 달성할 수 있는 시나리오를 찾을 수 없습니다. 목표 수익을 낮추거나 FDV/총 발행량을 조정해보세요.');
+            return;
+        }
         
         elements.filterSection.style.display = 'block';
         eventListeners.displayScenarios();
@@ -607,27 +623,34 @@ const scenarioGenerator = {
     generateScenarios: (targetProfit, tokenPrice) => {
         console.log('시나리오 생성:', { targetProfit, tokenPrice });
         const scenarios = [];
-        const delegationRanges = [
-            [100000, 500000],
-            [500000, 1000000],
-            [1000000, 5000000],
-            [5000000, 10000000],
-            [10000000, 50000000],
-            [50000000, 100000000]
+        
+        // 더 세밀한 위임량 범위 설정
+        const delegationValues = [
+            100000, 200000, 300000, 400000, 500000,
+            750000, 1000000, 1500000, 2000000, 2500000, 3000000, 4000000, 5000000,
+            7500000, 10000000, 15000000, 20000000, 25000000, 30000000, 40000000, 50000000,
+            75000000, 100000000
         ];
         
-        const apyValues = [2, 3, 4, 5, 8, 10, 15];
-        const commissionValues = [0, 5, 10, 15, 20, 25, 30];
+        const apyValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 20];
+        const commissionValues = [0, 2, 5, 8, 10, 12, 15, 18, 20, 25, 30];
         
-        for (const [minDelegation, maxDelegation] of delegationRanges) {
+        console.log('시나리오 생성 파라미터:', {
+            delegationValues: delegationValues.length,
+            apyValues: apyValues.length,
+            commissionValues: commissionValues.length,
+            totalCombinations: delegationValues.length * apyValues.length * commissionValues.length
+        });
+        
+        for (const delegation of delegationValues) {
             for (const apy of apyValues) {
                 for (const commission of commissionValues) {
-                    const delegation = (minDelegation + maxDelegation) / 2;
                     const delegationValue = calculator.calculateDelegationValue(delegation, tokenPrice);
                     const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission);
                     
-                    // 목표 수익과 비교 (소수점 오차 허용)
-                    if (utils.isApproximatelyEqual(yearlyProfit, targetProfit, 100)) {
+                    // 목표 수익과 비교 (더 정확한 허용 오차)
+                    const tolerance = Math.max(targetProfit * 0.01, 10); // 1% 또는 최소 $10
+                    if (Math.abs(yearlyProfit - targetProfit) <= tolerance) {
                         const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission);
                         scenarios.push({
                             delegation,
@@ -637,13 +660,33 @@ const scenarioGenerator = {
                             monthlyProfit,
                             yearlyProfit
                         });
+                        
+                        console.log('시나리오 발견:', {
+                            delegation,
+                            delegationValue,
+                            apy,
+                            commission,
+                            yearlyProfit,
+                            targetProfit,
+                            difference: Math.abs(yearlyProfit - targetProfit)
+                        });
                     }
                 }
             }
         }
         
         console.log('생성된 시나리오 수:', scenarios.length);
-        return scenarios.sort((a, b) => a.delegation - b.delegation);
+        
+        // 중복 제거 (동일한 위임량, APY, 커미션 조합)
+        const uniqueScenarios = scenarios.filter((scenario, index, self) => {
+            const key = `${scenario.delegation}-${scenario.apy}-${scenario.commission}`;
+            return index === self.findIndex(s => `${s.delegation}-${s.apy}-${s.commission}` === key);
+        });
+        
+        console.log('중복 제거 후 시나리오 수:', uniqueScenarios.length);
+        
+        // 위임량 순으로 정렬
+        return uniqueScenarios.sort((a, b) => a.delegation - b.delegation);
     }
 };
 
