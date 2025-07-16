@@ -449,7 +449,13 @@ const eventListeners = {
     
     // 시나리오 표시
     displayScenarios: () => {
-        console.log('시나리오 표시:', filteredScenarios.length);
+        console.log('시나리오 표시 시작:', filteredScenarios.length);
+        
+        if (!elements.scenariosGrid) {
+            console.error('시나리오 그리드 요소를 찾을 수 없습니다.');
+            return;
+        }
+        
         if (filteredScenarios.length === 0) {
             elements.scenariosGrid.innerHTML = `
                 <div class="placeholder-message">
@@ -457,8 +463,11 @@ const eventListeners = {
                     <p>조건에 맞는 시나리오가 없습니다. 필터 조건을 완화해보세요.</p>
                 </div>
             `;
+            console.log('시나리오 없음 - 플레이스홀더 표시');
             return;
         }
+        
+        console.log('시나리오 테이블 생성 중...');
         
         const tableHTML = `
             <div class="scenarios-table-header">
@@ -491,118 +500,220 @@ const eventListeners = {
         `;
         
         elements.scenariosGrid.innerHTML = tableHTML;
+        console.log('시나리오 테이블 생성 완료');
     },
     
     // 필터 적용
     applyFilter: () => {
-        console.log('필터 적용');
+        console.log('필터 적용 시작');
+        
+        // DOM 요소 확인
+        if (!elements.filterDelegationType || !elements.filterApyType || !elements.filterCommissionType) {
+            console.error('필터 DOM 요소를 찾을 수 없습니다:', {
+                filterDelegationType: !!elements.filterDelegationType,
+                filterApyType: !!elements.filterApyType,
+                filterCommissionType: !!elements.filterCommissionType
+            });
+            return;
+        }
+        
         const filters = eventListeners.getFilters();
+        console.log('적용할 필터:', filters);
+        
+        if (allScenarios.length === 0) {
+            console.log('필터링할 시나리오가 없습니다.');
+            return;
+        }
+        
         filteredScenarios = allScenarios.filter(scenario => {
-            return eventListeners.matchesFilter(scenario, filters);
+            const matches = eventListeners.matchesFilter(scenario, filters);
+            console.log('시나리오 필터링:', {
+                scenario: { delegation: scenario.delegation, apy: scenario.apy, commission: scenario.commission },
+                matches
+            });
+            return matches;
         });
+        
+        console.log('필터 적용 결과:', {
+            totalScenarios: allScenarios.length,
+            filteredScenarios: filteredScenarios.length
+        });
+        
         eventListeners.displayScenarios();
     },
     
     // 필터 초기화
     clearFilter: () => {
-        console.log('필터 초기화');
+        console.log('필터 초기화 시작');
         filteredScenarios = [...allScenarios];
         eventListeners.resetFilters();
         eventListeners.displayScenarios();
+        console.log('필터 초기화 완료');
     },
     
     // 필터 가져오기
     getFilters: () => {
-        return {
+        const filters = {
             delegation: {
-                type: elements.filterDelegationType.value,
-                range: elements.filterDelegationRange.value,
-                min: parseFloat(elements.filterDelegationMin.value) || 0,
-                max: parseFloat(elements.filterDelegationMax.value) || 0
+                type: elements.filterDelegationType ? elements.filterDelegationType.value : 'all',
+                range: elements.filterDelegationRange ? elements.filterDelegationRange.value : '',
+                min: parseFloat(elements.filterDelegationMin ? elements.filterDelegationMin.value : 0) || 0,
+                max: parseFloat(elements.filterDelegationMax ? elements.filterDelegationMax.value : 0) || 0
             },
             apy: {
-                type: elements.filterApyType.value,
-                specific: parseFloat(elements.filterApySpecific.value) || 0,
-                range: elements.filterApyRange.value,
-                min: parseFloat(elements.filterApyMin.value) || 0,
-                max: parseFloat(elements.filterApyMax.value) || 0
+                type: elements.filterApyType ? elements.filterApyType.value : 'all',
+                specific: parseFloat(elements.filterApySpecific ? elements.filterApySpecific.value : 0) || 0,
+                range: elements.filterApyRange ? elements.filterApyRange.value : '',
+                min: parseFloat(elements.filterApyMin ? elements.filterApyMin.value : 0) || 0,
+                max: parseFloat(elements.filterApyMax ? elements.filterApyMax.value : 0) || 0
             },
             commission: {
-                type: elements.filterCommissionType.value,
-                specific: parseFloat(elements.filterCommissionSpecific.value) || 0,
-                range: elements.filterCommissionRange.value,
-                min: parseFloat(elements.filterCommissionMin.value) || 0,
-                max: parseFloat(elements.filterCommissionMax.value) || 0
+                type: elements.filterCommissionType ? elements.filterCommissionType.value : 'all',
+                specific: parseFloat(elements.filterCommissionSpecific ? elements.filterCommissionSpecific.value : 0) || 0,
+                range: elements.filterCommissionRange ? elements.filterCommissionRange.value : '',
+                min: parseFloat(elements.filterCommissionMin ? elements.filterCommissionMin.value : 0) || 0,
+                max: parseFloat(elements.filterCommissionMax ? elements.filterCommissionMax.value : 0) || 0
             }
         };
+        
+        console.log('필터 설정:', filters);
+        return filters;
     },
     
     // 필터 매칭 확인
     matchesFilter: (scenario, filters) => {
+        console.log('필터 매칭 확인:', { scenario, filters });
+        
         // 위임량 필터
         if (filters.delegation.type !== 'all') {
             if (filters.delegation.type === 'range') {
                 const [min, max] = filters.delegation.range.split('-').map(Number);
-                if (scenario.delegation < min || scenario.delegation > max) return false;
+                if (scenario.delegation < min || scenario.delegation > max) {
+                    console.log('위임량 범위 필터 불일치:', { scenario: scenario.delegation, min, max });
+                    return false;
+                }
             } else if (filters.delegation.type === 'custom') {
-                if (scenario.delegation < filters.delegation.min || scenario.delegation > filters.delegation.max) return false;
+                if (scenario.delegation < filters.delegation.min || scenario.delegation > filters.delegation.max) {
+                    console.log('위임량 커스텀 필터 불일치:', { scenario: scenario.delegation, min: filters.delegation.min, max: filters.delegation.max });
+                    return false;
+                }
             }
         }
         
         // APY 필터
         if (filters.apy.type !== 'all') {
             if (filters.apy.type === 'specific') {
-                if (!utils.isApproximatelyEqual(scenario.apy, filters.apy.specific, 0.1)) return false;
+                if (!utils.isApproximatelyEqual(scenario.apy, filters.apy.specific, 0.1)) {
+                    console.log('APY 특정값 필터 불일치:', { scenario: scenario.apy, filter: filters.apy.specific });
+                    return false;
+                }
             } else if (filters.apy.type === 'range') {
                 const [min, max] = filters.apy.range.split('-').map(Number);
-                if (scenario.apy < min || scenario.apy > max) return false;
+                if (scenario.apy < min || scenario.apy > max) {
+                    console.log('APY 범위 필터 불일치:', { scenario: scenario.apy, min, max });
+                    return false;
+                }
             } else if (filters.apy.type === 'custom') {
-                if (scenario.apy < filters.apy.min || scenario.apy > filters.apy.max) return false;
+                if (scenario.apy < filters.apy.min || scenario.apy > filters.apy.max) {
+                    console.log('APY 커스텀 필터 불일치:', { scenario: scenario.apy, min: filters.apy.min, max: filters.apy.max });
+                    return false;
+                }
             }
         }
         
         // 커미션 필터
         if (filters.commission.type !== 'all') {
             if (filters.commission.type === 'specific') {
-                if (!utils.isApproximatelyEqual(scenario.commission, filters.commission.specific, 0.1)) return false;
+                if (!utils.isApproximatelyEqual(scenario.commission, filters.commission.specific, 0.1)) {
+                    console.log('커미션 특정값 필터 불일치:', { scenario: scenario.commission, filter: filters.commission.specific });
+                    return false;
+                }
             } else if (filters.commission.type === 'range') {
                 const [min, max] = filters.commission.range.split('-').map(Number);
-                if (scenario.commission < min || scenario.commission > max) return false;
+                if (scenario.commission < min || scenario.commission > max) {
+                    console.log('커미션 범위 필터 불일치:', { scenario: scenario.commission, min, max });
+                    return false;
+                }
             } else if (filters.commission.type === 'custom') {
-                if (scenario.commission < filters.commission.min || scenario.commission > filters.commission.max) return false;
+                if (scenario.commission < filters.commission.min || scenario.commission > filters.commission.max) {
+                    console.log('커미션 커스텀 필터 불일치:', { scenario: scenario.commission, min: filters.commission.min, max: filters.commission.max });
+                    return false;
+                }
             }
         }
         
+        console.log('필터 매칭 성공');
         return true;
     },
     
     // 필터 초기화
     resetFilters: () => {
-        elements.filterDelegationType.value = 'all';
-        elements.filterApyType.value = 'all';
-        elements.filterCommissionType.value = 'all';
+        console.log('필터 초기화 실행');
+        
+        if (elements.filterDelegationType) {
+            elements.filterDelegationType.value = 'all';
+        }
+        if (elements.filterApyType) {
+            elements.filterApyType.value = 'all';
+        }
+        if (elements.filterCommissionType) {
+            elements.filterCommissionType.value = 'all';
+        }
+        
         eventListeners.handleFilterTypeChange();
+        console.log('필터 초기화 완료');
     },
     
     // 필터 타입 변경 처리
     handleFilterTypeChange: () => {
-        console.log('필터 타입 변경');
+        console.log('필터 타입 변경 처리');
+        
         // 위임량 필터
-        const delegationType = elements.filterDelegationType.value;
-        elements.filterDelegationRange.style.display = delegationType === 'range' ? 'block' : 'none';
-        elements.filterDelegationCustom.style.display = delegationType === 'custom' ? 'block' : 'none';
+        if (elements.filterDelegationType) {
+            const delegationType = elements.filterDelegationType.value;
+            console.log('위임량 필터 타입:', delegationType);
+            
+            if (elements.filterDelegationRange) {
+                elements.filterDelegationRange.style.display = delegationType === 'range' ? 'block' : 'none';
+            }
+            if (elements.filterDelegationCustom) {
+                elements.filterDelegationCustom.style.display = delegationType === 'custom' ? 'block' : 'none';
+            }
+        }
         
         // APY 필터
-        const apyType = elements.filterApyType.value;
-        elements.filterApySpecific.style.display = apyType === 'specific' ? 'block' : 'none';
-        elements.filterApyRange.style.display = apyType === 'range' ? 'block' : 'none';
-        elements.filterApyCustom.style.display = apyType === 'custom' ? 'block' : 'none';
+        if (elements.filterApyType) {
+            const apyType = elements.filterApyType.value;
+            console.log('APY 필터 타입:', apyType);
+            
+            if (elements.filterApySpecific) {
+                elements.filterApySpecific.style.display = apyType === 'specific' ? 'block' : 'none';
+            }
+            if (elements.filterApyRange) {
+                elements.filterApyRange.style.display = apyType === 'range' ? 'block' : 'none';
+            }
+            if (elements.filterApyCustom) {
+                elements.filterApyCustom.style.display = apyType === 'custom' ? 'block' : 'none';
+            }
+        }
         
         // 커미션 필터
-        const commissionType = elements.filterCommissionType.value;
-        elements.filterCommissionSpecific.style.display = commissionType === 'specific' ? 'block' : 'none';
-        elements.filterCommissionRange.style.display = commissionType === 'range' ? 'block' : 'none';
-        elements.filterCommissionCustom.style.display = commissionType === 'custom' ? 'block' : 'none';
+        if (elements.filterCommissionType) {
+            const commissionType = elements.filterCommissionType.value;
+            console.log('커미션 필터 타입:', commissionType);
+            
+            if (elements.filterCommissionSpecific) {
+                elements.filterCommissionSpecific.style.display = commissionType === 'specific' ? 'block' : 'none';
+            }
+            if (elements.filterCommissionRange) {
+                elements.filterCommissionRange.style.display = commissionType === 'range' ? 'block' : 'none';
+            }
+            if (elements.filterCommissionCustom) {
+                elements.filterCommissionCustom.style.display = commissionType === 'custom' ? 'block' : 'none';
+            }
+        }
+        
+        console.log('필터 타입 변경 처리 완료');
     },
     
     // 스크롤 처리
