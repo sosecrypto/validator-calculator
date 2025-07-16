@@ -143,25 +143,28 @@ const calculator = {
     },
     
     // 월 수익 계산 (운영 비용 포함)
-    calculateMonthlyProfit: (delegationValue, apy, commission, operatingCost = 0) => {
+    calculateMonthlyProfit: (delegationValue, apy, commission, monthlyOperatingCost = 0) => {
         const actualApy = apy * (1 - commission / 100);
         const grossYearlyProfit = delegationValue * actualApy / 100;
-        const netYearlyProfit = grossYearlyProfit - operatingCost;
+        const yearlyOperatingCost = monthlyOperatingCost * 12;
+        const netYearlyProfit = grossYearlyProfit - yearlyOperatingCost;
         return netYearlyProfit / 12;
     },
     
     // 연 수익 계산 (운영 비용 포함)
-    calculateYearlyProfit: (delegationValue, apy, commission, operatingCost = 0) => {
+    calculateYearlyProfit: (delegationValue, apy, commission, monthlyOperatingCost = 0) => {
         const actualApy = apy * (1 - commission / 100);
         const grossYearlyProfit = delegationValue * actualApy / 100;
-        return grossYearlyProfit - operatingCost;
+        const yearlyOperatingCost = monthlyOperatingCost * 12;
+        return grossYearlyProfit - yearlyOperatingCost;
     },
     
     // 실제 APY 계산 (운영 비용 포함)
-    calculateActualApy: (apy, commission, delegationValue, operatingCost = 0) => {
+    calculateActualApy: (apy, commission, delegationValue, monthlyOperatingCost = 0) => {
         const actualApy = apy * (1 - commission / 100);
         const grossYearlyProfit = delegationValue * actualApy / 100;
-        const netYearlyProfit = grossYearlyProfit - operatingCost;
+        const yearlyOperatingCost = monthlyOperatingCost * 12;
+        const netYearlyProfit = grossYearlyProfit - yearlyOperatingCost;
         return (netYearlyProfit / delegationValue) * 100;
     }
 };
@@ -336,16 +339,16 @@ const eventListeners = {
         const delegation = utils.parseInput(elements.delegationToken.value);
         const apy = parseFloat(elements.apyToken.value) || 0;
         const commission = parseFloat(elements.commissionToken.value) || 0;
-        const operatingCost = parseFloat(elements.operatingCostToken.value) || 0;
+        const monthlyOperatingCost = parseFloat(elements.operatingCostToken.value) || 0;
         
-        console.log('계산 값:', { fdv, totalSupply, delegation, apy, commission, operatingCost });
+        console.log('계산 값:', { fdv, totalSupply, delegation, apy, commission, monthlyOperatingCost });
         
         if (fdv > 0 && totalSupply > 0) {
             const tokenPrice = calculator.calculateTokenPrice(fdv, totalSupply);
             const delegationValue = calculator.calculateDelegationValue(delegation, tokenPrice);
-            const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission, operatingCost);
-            const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission, operatingCost);
-            const actualApy = calculator.calculateActualApy(apy, commission, delegationValue, operatingCost);
+            const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission, monthlyOperatingCost);
+            const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission, monthlyOperatingCost);
+            const actualApy = calculator.calculateActualApy(apy, commission, delegationValue, monthlyOperatingCost);
             
             elements.tokenPrice.textContent = utils.formatCurrency(tokenPrice);
             elements.delegationUsdValue.textContent = utils.formatCurrency(delegationValue);
@@ -353,7 +356,7 @@ const eventListeners = {
             elements.yearlyProfitToken.textContent = utils.formatCurrency(yearlyProfit);
             elements.actualApyToken.textContent = utils.formatPercentage(actualApy);
             
-            console.log('계산 결과:', { tokenPrice, delegationValue, monthlyProfit, yearlyProfit, actualApy, operatingCost });
+            console.log('계산 결과:', { tokenPrice, delegationValue, monthlyProfit, yearlyProfit, actualApy, monthlyOperatingCost });
         }
     },
     
@@ -371,12 +374,12 @@ const eventListeners = {
         const delegationValue = parseFloat(elements.delegationUsd.value) || 0;
         const apy = parseFloat(elements.apyUsd.value) || 0;
         const commission = parseFloat(elements.commissionUsd.value) || 0;
-        const operatingCost = parseFloat(elements.operatingCostUsd.value) || 0;
+        const monthlyOperatingCost = parseFloat(elements.operatingCostUsd.value) || 0;
         
         if (delegationValue > 0) {
-            const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission, operatingCost);
-            const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission, operatingCost);
-            const actualApy = calculator.calculateActualApy(apy, commission, delegationValue, operatingCost);
+            const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission, monthlyOperatingCost);
+            const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission, monthlyOperatingCost);
+            const actualApy = calculator.calculateActualApy(apy, commission, delegationValue, monthlyOperatingCost);
             
             elements.monthlyProfitUsd.textContent = utils.formatCurrency(monthlyProfit);
             elements.yearlyProfitUsd.textContent = utils.formatCurrency(yearlyProfit);
@@ -419,9 +422,9 @@ const eventListeners = {
         const targetProfit = eventListeners.getTargetProfit();
         const fdv = eventListeners.getInputFdv();
         const totalSupply = eventListeners.getInputTotalSupply();
-        const operatingCost = eventListeners.getInputOperatingCost();
+        const monthlyOperatingCost = eventListeners.getInputOperatingCost();
         
-        console.log('시나리오 생성 값:', { targetProfit, fdv, totalSupply, operatingCost });
+        console.log('시나리오 생성 값:', { targetProfit, fdv, totalSupply, monthlyOperatingCost });
         
         if (targetProfit <= 0 || fdv <= 0 || totalSupply <= 0) {
             alert('목표 수익, FDV, 총 발행량을 모두 입력해주세요.');
@@ -437,8 +440,8 @@ const eventListeners = {
             return;
         }
         
-        // 시나리오 생성 (운영 비용 포함)
-        allScenarios = scenarioGenerator.generateScenarios(targetProfit, tokenPrice, operatingCost);
+        // 시나리오 생성 (월간 운영 비용 포함)
+        allScenarios = scenarioGenerator.generateScenarios(targetProfit, tokenPrice, monthlyOperatingCost);
         filteredScenarios = [...allScenarios];
         
         console.log('생성된 시나리오:', allScenarios);
@@ -483,7 +486,7 @@ const eventListeners = {
             : parseFloat(elements.inputTotalSupplySelect.value) || 0;
     },
     
-    // 입력 운영 비용 가져오기
+    // 입력 월간 운영 비용 가져오기
     getInputOperatingCost: () => {
         return parseFloat(elements.inputOperatingCost.value) || 0;
     },
@@ -839,8 +842,8 @@ const eventListeners = {
 
 // 시나리오 생성기
 const scenarioGenerator = {
-    generateScenarios: (targetProfit, tokenPrice, operatingCost = 0) => {
-        console.log('시나리오 생성:', { targetProfit, tokenPrice, operatingCost });
+    generateScenarios: (targetProfit, tokenPrice, monthlyOperatingCost = 0) => {
+        console.log('시나리오 생성:', { targetProfit, tokenPrice, monthlyOperatingCost });
         const scenarios = [];
         
         // 더 세밀하고 다양한 위임량 범위 설정
@@ -887,17 +890,17 @@ const scenarioGenerator = {
             for (const apy of apyValues) {
                 for (const commission of commissionValues) {
                     const delegationValue = calculator.calculateDelegationValue(delegation, tokenPrice);
-                    const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission, operatingCost);
+                    const yearlyProfit = calculator.calculateYearlyProfit(delegationValue, apy, commission, monthlyOperatingCost);
                     
                     // 목표 수익과 비교 (더 넓은 허용 오차)
                     if (Math.abs(yearlyProfit - targetProfit) <= tolerance) {
-                        const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission, operatingCost);
+                        const monthlyProfit = calculator.calculateMonthlyProfit(delegationValue, apy, commission, monthlyOperatingCost);
                         scenarios.push({
                             delegation,
                             delegationValue,
                             apy,
                             commission,
-                            operatingCost,
+                            monthlyOperatingCost,
                             monthlyProfit,
                             yearlyProfit
                         });
@@ -907,7 +910,7 @@ const scenarioGenerator = {
                             delegationValue,
                             apy,
                             commission,
-                            operatingCost,
+                            monthlyOperatingCost,
                             yearlyProfit,
                             targetProfit,
                             difference: Math.abs(yearlyProfit - targetProfit)
@@ -990,7 +993,7 @@ const popupManager = {
             </div>
             <div class="formula-item">
                 <h4>순 연 수익 계산</h4>
-                <p><strong>순 연 수익 = 총 연 수익 - 운영 비용</strong></p>
+                <p><strong>순 연 수익 = 총 연 수익 - (월간 운영 비용 × 12)</strong></p>
             </div>
             <div class="formula-item">
                 <h4>월 수익 계산</h4>
