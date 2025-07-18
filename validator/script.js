@@ -238,7 +238,7 @@ function createScenarios(targetProfit, fdv, totalSupply, range, count) {
     const scenarios = [];
     // APY, 커미션, 위임량만 조합
     const apyRange = [8, 10, 12, 15, 18, 20, 25, 30];
-    const commissionRange = [5, 8, 10, 12, 15, 18, 20];
+    const commissionRange = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
     
     for (let i = 0; i < apyRange.length; i++) {
         for (let j = 0; j < commissionRange.length; j++) {
