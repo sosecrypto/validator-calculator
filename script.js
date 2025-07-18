@@ -25,6 +25,7 @@ const initializeElements = () => {
         delegationToken: document.getElementById('delegation-token'),
         apyToken: document.getElementById('apy-token'),
         commissionToken: document.getElementById('commission-token'),
+        commissionTokenCustom: document.getElementById('commission-token-custom'),
         operatingCostToken: document.getElementById('operating-cost-token'),
         tokenPrice: document.getElementById('token-price'),
         delegationUsdValue: document.getElementById('delegation-usd-value'),
@@ -38,6 +39,7 @@ const initializeElements = () => {
         delegationUsd: document.getElementById('delegation-usd'),
         apyUsd: document.getElementById('apy-usd'),
         commissionUsd: document.getElementById('commission-usd'),
+        commissionUsdCustom: document.getElementById('commission-usd-custom'),
         operatingCostUsd: document.getElementById('operating-cost-usd'),
         monthlyProfitUsd: document.getElementById('monthly-profit-usd'),
         yearlyProfitUsd: document.getElementById('yearly-profit-usd'),
@@ -206,7 +208,10 @@ const eventListeners = {
             elements.apyToken.addEventListener('input', eventListeners.handleTokenCalculation);
         }
         if (elements.commissionToken) {
-            elements.commissionToken.addEventListener('input', eventListeners.handleTokenCalculation);
+            elements.commissionToken.addEventListener('change', eventListeners.handleCommissionTokenChange);
+        }
+        if (elements.commissionTokenCustom) {
+            elements.commissionTokenCustom.addEventListener('input', eventListeners.handleTokenCalculation);
         }
         if (elements.operatingCostToken) {
             elements.operatingCostToken.addEventListener('input', eventListeners.handleTokenCalculation);
@@ -223,7 +228,10 @@ const eventListeners = {
             elements.apyUsd.addEventListener('input', eventListeners.handleUsdCalculation);
         }
         if (elements.commissionUsd) {
-            elements.commissionUsd.addEventListener('input', eventListeners.handleUsdCalculation);
+            elements.commissionUsd.addEventListener('change', eventListeners.handleCommissionUsdChange);
+        }
+        if (elements.commissionUsdCustom) {
+            elements.commissionUsdCustom.addEventListener('input', eventListeners.handleUsdCalculation);
         }
         if (elements.operatingCostUsd) {
             elements.operatingCostUsd.addEventListener('input', eventListeners.handleUsdCalculation);
@@ -330,6 +338,28 @@ const eventListeners = {
         eventListeners.handleTokenCalculation();
     },
     
+    // 토큰 커미션 변경 처리
+    handleCommissionTokenChange: () => {
+        console.log('토큰 커미션 변경');
+        const isCustom = elements.commissionToken.value === 'custom';
+        elements.commissionTokenCustom.style.display = isCustom ? 'block' : 'none';
+        if (isCustom) {
+            elements.commissionTokenCustom.focus();
+        }
+        eventListeners.handleTokenCalculation();
+    },
+    
+    // USD 커미션 변경 처리
+    handleCommissionUsdChange: () => {
+        console.log('USD 커미션 변경');
+        const isCustom = elements.commissionUsd.value === 'custom';
+        elements.commissionUsdCustom.style.display = isCustom ? 'block' : 'none';
+        if (isCustom) {
+            elements.commissionUsdCustom.focus();
+        }
+        eventListeners.handleUsdCalculation();
+    },
+    
     // 토큰 기반 계산 처리
     handleTokenCalculation: () => {
         console.log('토큰 기반 계산 실행');
@@ -341,7 +371,9 @@ const eventListeners = {
             : parseFloat(elements.totalSupplySelect.value);
         const delegation = utils.parseInput(elements.delegationToken.value);
         const apy = parseFloat(elements.apyToken.value) || 0;
-        const commission = parseFloat(elements.commissionToken.value) || 0;
+        const commission = elements.commissionToken.value === 'custom' 
+            ? parseFloat(elements.commissionTokenCustom.value) || 0
+            : parseFloat(elements.commissionToken.value) || 0;
         const monthlyOperatingCost = parseFloat(elements.operatingCostToken.value) || 0;
         
         console.log('계산 값:', { fdv, totalSupply, delegation, apy, commission, monthlyOperatingCost });
@@ -376,7 +408,9 @@ const eventListeners = {
         console.log('USD 기반 계산 실행');
         const delegationValue = parseFloat(elements.delegationUsd.value) || 0;
         const apy = parseFloat(elements.apyUsd.value) || 0;
-        const commission = parseFloat(elements.commissionUsd.value) || 0;
+        const commission = elements.commissionUsd.value === 'custom' 
+            ? parseFloat(elements.commissionUsdCustom.value) || 0
+            : parseFloat(elements.commissionUsd.value) || 0;
         const monthlyOperatingCost = parseFloat(elements.operatingCostUsd.value) || 0;
         
         if (delegationValue > 0) {

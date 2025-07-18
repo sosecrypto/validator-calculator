@@ -5,6 +5,7 @@ const fdvCustomUsd = document.getElementById('fdv-custom-usd');
 const delegationUsdInput = document.getElementById('delegation-usd');
 const apyUsdInput = document.getElementById('apy-usd');
 const commissionUsdInput = document.getElementById('commission-usd');
+const commissionUsdCustomInput = document.getElementById('commission-usd-custom');
 const operatingCostUsdInput = document.getElementById('operating-cost-usd');
 const yearlyProfitUsdElement = document.getElementById('yearly-profit-usd');
 const monthlyProfitUsdElement = document.getElementById('monthly-profit-usd');
@@ -18,6 +19,7 @@ const totalSupplyCustom = document.getElementById('total-supply-custom');
 const delegationTokenInput = document.getElementById('delegation-token');
 const apyTokenInput = document.getElementById('apy-token');
 const commissionTokenInput = document.getElementById('commission-token');
+const commissionTokenCustomInput = document.getElementById('commission-token-custom');
 const operatingCostTokenInput = document.getElementById('operating-cost-token');
 const yearlyProfitTokenElement = document.getElementById('yearly-profit-token');
 const monthlyProfitTokenElement = document.getElementById('monthly-profit-token');
@@ -89,7 +91,9 @@ function calculateProfitUsd() {
     const fdv = getFdvValue(fdvSelectUsd, fdvCustomUsd);
     const delegation = parseFloat(delegationUsdInput.value) || 0;
     const apy = parseFloat(apyUsdInput.value) || 0;
-    const commission = parseFloat(commissionUsdInput.value) || 0;
+    const commission = commissionUsdInput.value === 'custom' 
+        ? parseFloat(commissionUsdCustomInput.value) || 0
+        : parseFloat(commissionUsdInput.value) || 0;
     const monthlyOperatingCost = parseFloat(operatingCostUsdInput.value) || 0;
     
     const grossYearlyProfit = delegation * (apy / 100);
@@ -111,7 +115,9 @@ function calculateProfitToken() {
     const totalSupply = getTotalSupplyValue();
     const tokenAmount = parseInt(delegationTokenInput.getAttribute('data-original-value')) || 0;
     const apy = parseFloat(apyTokenInput.value) || 0;
-    const commission = parseFloat(commissionTokenInput.value) || 0;
+    const commission = commissionTokenInput.value === 'custom' 
+        ? parseFloat(commissionTokenCustomInput.value) || 0
+        : parseFloat(commissionTokenInput.value) || 0;
     const monthlyOperatingCost = parseFloat(operatingCostTokenInput.value) || 0;
     
     const tokenPrice = totalSupply > 0 ? fdv / totalSupply : 0;
@@ -403,6 +409,25 @@ function handleDelegationTokenInput() {
     });
 }
 
+// 커미션 변경 처리 함수들
+function handleCommissionUsdChange() {
+    const isCustom = commissionUsdInput.value === 'custom';
+    commissionUsdCustomInput.style.display = isCustom ? 'block' : 'none';
+    if (isCustom) {
+        commissionUsdCustomInput.focus();
+    }
+    calculateProfitUsd();
+}
+
+function handleCommissionTokenChange() {
+    const isCustom = commissionTokenInput.value === 'custom';
+    commissionTokenCustomInput.style.display = isCustom ? 'block' : 'none';
+    if (isCustom) {
+        commissionTokenCustomInput.focus();
+    }
+    calculateProfitToken();
+}
+
 // 총 발행량 입력 처리
 function handleTotalSupplyInput(selectElement, customInput) {
     if (!selectElement || !customInput) return;
@@ -440,13 +465,15 @@ function initializeEventListeners() {
     // 달러 기반 계산기 이벤트
     delegationUsdInput.addEventListener('input', calculateProfitUsd);
     apyUsdInput.addEventListener('input', calculateProfitUsd);
-    commissionUsdInput.addEventListener('input', calculateProfitUsd);
+    commissionUsdInput.addEventListener('change', handleCommissionUsdChange);
+    commissionUsdCustomInput.addEventListener('input', calculateProfitUsd);
     operatingCostUsdInput.addEventListener('input', calculateProfitUsd);
     
     // 토큰 기반 계산기 이벤트
     delegationTokenInput.addEventListener('input', calculateProfitToken);
     apyTokenInput.addEventListener('input', calculateProfitToken);
-    commissionTokenInput.addEventListener('input', calculateProfitToken);
+    commissionTokenInput.addEventListener('change', handleCommissionTokenChange);
+    commissionTokenCustomInput.addEventListener('input', calculateProfitToken);
     operatingCostTokenInput.addEventListener('input', calculateProfitToken);
     
     // 목표 수익 입력 처리
