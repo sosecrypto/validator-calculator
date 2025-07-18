@@ -118,8 +118,13 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="commission-token">커미션 비율</label>
+                            <label for="commission-token">밸리데이터 커미션 비율 (%)</label>
                             <input type="number" id="commission-token" value="10" min="0" max="100" step="0.1">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="operating-cost-token">운영 비용 (월간)</label>
+                            <input type="number" id="operating-cost-token" value="0" min="0" step="100" placeholder="월간 운영 비용 입력">
                         </div>
                     </div>
 
@@ -194,8 +199,13 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="commission-usd">커미션 비율</label>
+                            <label for="commission-usd">밸리데이터 커미션 비율 (%)</label>
                             <input type="number" id="commission-usd" value="10" min="0" max="100" step="0.1">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="operating-cost-usd">운영 비용 (월간)</label>
+                            <input type="number" id="operating-cost-usd" value="0" min="0" step="100" placeholder="월간 운영 비용 입력">
                         </div>
                     </div>
 
@@ -311,6 +321,11 @@
                                 <input type="number" id="input-total-supply-custom" placeholder="총 발행량 입력" style="display: none;">
                             </div>
                         </div>
+
+                        <div class="input-group">
+                            <label for="input-operating-cost">운영 비용 (월간)</label>
+                            <input type="number" id="input-operating-cost" value="0" min="0" step="100" placeholder="월간 운영 비용 입력">
+                        </div>
                     </div>
                 </div>
 
@@ -389,7 +404,7 @@
                                     </div>
                                 </div>
                                 <div class="filter-group">
-                                    <label for="filter-commission">커미션 비율</label>
+                                    <label for="filter-commission">밸리데이터 커미션 비율</label>
                                     <div class="filter-input-container">
                                         <select id="filter-commission-type">
                                             <option value="all">모든 비율</option>
@@ -486,7 +501,8 @@
             <div class="popup-body">
                 <div class="formula-item">
                     <h4>연 수익</h4>
-                    <p><strong>연 수익 = 위임량 × APY × (1 - 커미션 / 100)</strong></p>
+                    <p><strong>연 수익 = 위임량 × APY + (위임량 × APY × 커미션 / 100) - 운영비용</strong></p>
+                    <p><em>※ 커미션은 밸리데이터가 추가로 가져가는 수익입니다</em></p>
                 </div>
                 <div class="formula-item">
                     <h4>월 수익</h4>

@@ -142,29 +142,32 @@ const calculator = {
         return delegation * tokenPrice;
     },
     
-    // 월 수익 계산 (운영 비용 포함)
+    // 월 수익 계산 (운영 비용 포함, 밸리데이터가 커미션 가져감)
     calculateMonthlyProfit: (delegationValue, apy, commission, monthlyOperatingCost = 0) => {
-        const actualApy = apy * (1 - commission / 100);
-        const grossYearlyProfit = delegationValue * actualApy / 100;
+        const grossYearlyProfit = delegationValue * apy / 100;
+        const commissionEarnings = grossYearlyProfit * (commission / 100);
+        const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
         const yearlyOperatingCost = monthlyOperatingCost * 12;
-        const netYearlyProfit = grossYearlyProfit - yearlyOperatingCost;
+        const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
         return netYearlyProfit / 12;
     },
     
-    // 연 수익 계산 (운영 비용 포함)
+    // 연 수익 계산 (운영 비용 포함, 밸리데이터가 커미션 가져감)
     calculateYearlyProfit: (delegationValue, apy, commission, monthlyOperatingCost = 0) => {
-        const actualApy = apy * (1 - commission / 100);
-        const grossYearlyProfit = delegationValue * actualApy / 100;
+        const grossYearlyProfit = delegationValue * apy / 100;
+        const commissionEarnings = grossYearlyProfit * (commission / 100);
+        const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
         const yearlyOperatingCost = monthlyOperatingCost * 12;
-        return grossYearlyProfit - yearlyOperatingCost;
+        return totalYearlyProfit - yearlyOperatingCost;
     },
     
-    // 실제 APY 계산 (운영 비용 포함)
+    // 실제 APY 계산 (운영 비용 포함, 밸리데이터가 커미션 가져감)
     calculateActualApy: (apy, commission, delegationValue, monthlyOperatingCost = 0) => {
-        const actualApy = apy * (1 - commission / 100);
-        const grossYearlyProfit = delegationValue * actualApy / 100;
+        const grossYearlyProfit = delegationValue * apy / 100;
+        const commissionEarnings = grossYearlyProfit * (commission / 100);
+        const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
         const yearlyOperatingCost = monthlyOperatingCost * 12;
-        const netYearlyProfit = grossYearlyProfit - yearlyOperatingCost;
+        const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
         return (netYearlyProfit / delegationValue) * 100;
     }
 };
@@ -542,6 +545,7 @@ const eventListeners = {
                 <td>${utils.formatCurrency(scenario.delegationValue)}</td>
                 <td>${utils.formatPercentage(scenario.apy)}</td>
                 <td>${utils.formatPercentage(scenario.commission)}</td>
+                <td>${utils.formatCurrency(scenario.monthlyOperatingCost)}</td>
                 <td>${utils.formatCurrency(scenario.monthlyProfit)}</td>
                 <td>${utils.formatCurrency(scenario.yearlyProfit)}</td>
             </tr>
@@ -556,7 +560,8 @@ const eventListeners = {
                             <th>위임량 (토큰)</th>
                             <th>위임 가치 (USD)</th>
                             <th>APY</th>
-                            <th>커미션</th>
+                            <th>밸리데이터 커미션</th>
+                            <th>월간 운영비용</th>
                             <th>월 수익</th>
                             <th>연 수익</th>
                         </tr>
@@ -984,12 +989,17 @@ const popupManager = {
                 <p><strong>위임 가치 (USD) = 위임량 × 토큰 가격</strong></p>
             </div>
             <div class="formula-item">
-                <h4>실제 APY 계산</h4>
-                <p><strong>실제 APY = APY × (1 - 커미션 비율 ÷ 100)</strong></p>
+                <h4>기본 연 수익 계산</h4>
+                <p><strong>기본 연 수익 = 위임 가치 × APY ÷ 100</strong></p>
+            </div>
+            <div class="formula-item">
+                <h4>커미션 수익 계산</h4>
+                <p><strong>커미션 수익 = 기본 연 수익 × 커미션 비율 ÷ 100</strong></p>
+                <p><em>※ 커미션은 밸리데이터가 추가로 가져가는 수익입니다</em></p>
             </div>
             <div class="formula-item">
                 <h4>총 연 수익 계산</h4>
-                <p><strong>총 연 수익 = 위임 가치 × 실제 APY ÷ 100</strong></p>
+                <p><strong>총 연 수익 = 기본 연 수익 + 커미션 수익</strong></p>
             </div>
             <div class="formula-item">
                 <h4>순 연 수익 계산</h4>

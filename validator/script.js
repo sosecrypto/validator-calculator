@@ -5,6 +5,7 @@ const fdvCustomUsd = document.getElementById('fdv-custom-usd');
 const delegationUsdInput = document.getElementById('delegation-usd');
 const apyUsdInput = document.getElementById('apy-usd');
 const commissionUsdInput = document.getElementById('commission-usd');
+const operatingCostUsdInput = document.getElementById('operating-cost-usd');
 const yearlyProfitUsdElement = document.getElementById('yearly-profit-usd');
 const monthlyProfitUsdElement = document.getElementById('monthly-profit-usd');
 const actualApyUsdElement = document.getElementById('actual-apy-usd');
@@ -17,6 +18,7 @@ const totalSupplyCustom = document.getElementById('total-supply-custom');
 const delegationTokenInput = document.getElementById('delegation-token');
 const apyTokenInput = document.getElementById('apy-token');
 const commissionTokenInput = document.getElementById('commission-token');
+const operatingCostTokenInput = document.getElementById('operating-cost-token');
 const yearlyProfitTokenElement = document.getElementById('yearly-profit-token');
 const monthlyProfitTokenElement = document.getElementById('monthly-profit-token');
 const actualApyTokenElement = document.getElementById('actual-apy-token');
@@ -82,37 +84,47 @@ function handleFdvInput(selectElement, customInput) {
     });
 }
 
-// 달러 기반 수익 계산
+// 달러 기반 수익 계산 (밸리데이터가 커미션 가져감, 운영비용 포함)
 function calculateProfitUsd() {
     const fdv = getFdvValue(fdvSelectUsd, fdvCustomUsd);
     const delegation = parseFloat(delegationUsdInput.value) || 0;
     const apy = parseFloat(apyUsdInput.value) || 0;
     const commission = parseFloat(commissionUsdInput.value) || 0;
+    const monthlyOperatingCost = parseFloat(operatingCostUsdInput.value) || 0;
     
-    const yearlyProfit = delegation * (apy / 100) * (1 - commission / 100);
-    const monthlyProfit = yearlyProfit / 12;
-    const actualApy = (yearlyProfit / delegation) * 100;
+    const grossYearlyProfit = delegation * (apy / 100);
+    const commissionEarnings = grossYearlyProfit * (commission / 100);
+    const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
+    const yearlyOperatingCost = monthlyOperatingCost * 12;
+    const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
+    const monthlyProfit = netYearlyProfit / 12;
+    const actualApy = (netYearlyProfit / delegation) * 100;
     
-    yearlyProfitUsdElement.textContent = formatCurrency(yearlyProfit);
+    yearlyProfitUsdElement.textContent = formatCurrency(netYearlyProfit);
     monthlyProfitUsdElement.textContent = formatCurrency(monthlyProfit);
     actualApyUsdElement.textContent = actualApy.toFixed(2) + '%';
 }
 
-// 토큰 기반 수익 계산
+// 토큰 기반 수익 계산 (밸리데이터가 커미션 가져감, 운영비용 포함)
 function calculateProfitToken() {
     const fdv = getFdvValue(fdvSelectToken, fdvCustomToken);
     const totalSupply = getTotalSupplyValue();
     const tokenAmount = parseInt(delegationTokenInput.getAttribute('data-original-value')) || 0;
     const apy = parseFloat(apyTokenInput.value) || 0;
     const commission = parseFloat(commissionTokenInput.value) || 0;
+    const monthlyOperatingCost = parseFloat(operatingCostTokenInput.value) || 0;
     
     const tokenPrice = totalSupply > 0 ? fdv / totalSupply : 0;
     const delegationUSD = tokenAmount * tokenPrice;
-    const yearlyProfit = delegationUSD * (apy / 100) * (1 - commission / 100);
-    const monthlyProfit = yearlyProfit / 12;
-    const actualApy = (yearlyProfit / delegationUSD) * 100;
+    const grossYearlyProfit = delegationUSD * (apy / 100);
+    const commissionEarnings = grossYearlyProfit * (commission / 100);
+    const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
+    const yearlyOperatingCost = monthlyOperatingCost * 12;
+    const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
+    const monthlyProfit = netYearlyProfit / 12;
+    const actualApy = (netYearlyProfit / delegationUSD) * 100;
     
-    yearlyProfitTokenElement.textContent = formatCurrency(yearlyProfit);
+    yearlyProfitTokenElement.textContent = formatCurrency(netYearlyProfit);
     monthlyProfitTokenElement.textContent = formatCurrency(monthlyProfit);
     actualApyTokenElement.textContent = actualApy.toFixed(2) + '%';
 }
@@ -227,10 +239,13 @@ function createScenarios(targetProfit, fdv, totalSupply, range, count) {
             const apy = apyRange[i];
             const commission = commissionRange[j];
             const tokenPrice = fdv / totalSupply;
-            // 목표 수익을 달성하기 위한 위임 USD
-            const requiredDelegationUSD = targetProfit / (apy / 100) / (1 - commission / 100);
+            // 목표 수익을 달성하기 위한 위임 USD (밸리데이터가 커미션 가져감)
+            const grossYearlyProfit = targetProfit / (1 + commission / 100);
+            const requiredDelegationUSD = grossYearlyProfit / (apy / 100);
             const requiredDelegationTokens = requiredDelegationUSD / tokenPrice;
-            const actualYearlyProfit = requiredDelegationUSD * (apy / 100) * (1 - commission / 100);
+            const actualGrossYearlyProfit = requiredDelegationUSD * (apy / 100);
+            const commissionEarnings = actualGrossYearlyProfit * (commission / 100);
+            const actualYearlyProfit = actualGrossYearlyProfit + commissionEarnings;
             const actualMonthlyProfit = actualYearlyProfit / 12;
             const actualApy = (actualYearlyProfit / requiredDelegationUSD) * 100;
             const difference = Math.abs(actualYearlyProfit - targetProfit);
@@ -301,7 +316,7 @@ function displayScenarios(scenarios) {
                     <span class="scenario-value">${scenario.apy}%</span>
                 </div>
                 <div class="scenario-item">
-                    <span class="scenario-label">커미션:</span>
+                    <span class="scenario-label">밸리데이터 커미션:</span>
                     <span class="scenario-value">${scenario.commission}%</span>
                 </div>
             </div>
@@ -426,11 +441,13 @@ function initializeEventListeners() {
     delegationUsdInput.addEventListener('input', calculateProfitUsd);
     apyUsdInput.addEventListener('input', calculateProfitUsd);
     commissionUsdInput.addEventListener('input', calculateProfitUsd);
+    operatingCostUsdInput.addEventListener('input', calculateProfitUsd);
     
     // 토큰 기반 계산기 이벤트
     delegationTokenInput.addEventListener('input', calculateProfitToken);
     apyTokenInput.addEventListener('input', calculateProfitToken);
     commissionTokenInput.addEventListener('input', calculateProfitToken);
+    operatingCostTokenInput.addEventListener('input', calculateProfitToken);
     
     // 목표 수익 입력 처리
     handleTargetProfitInput();
