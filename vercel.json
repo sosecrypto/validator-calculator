@@ -1,12 +1,9 @@
 {
   "version": 2,
+  "name": "validator-calculator",
   "builds": [
     {
       "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.css",
       "use": "@vercel/static"
     },
     {
@@ -14,18 +11,53 @@
       "use": "@vercel/static"
     },
     {
+      "src": "*.css",
+      "use": "@vercel/static"
+    },
+    {
       "src": "*.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.ai",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "validator/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/",
-      "dest": "/validator.html"
+      "dest": "/index.html"
     },
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "src": "/validator",
+      "dest": "/validator/index.html"
+    },
+    {
+      "src": "/validator.html",
+      "dest": "/validator.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     }
   ]
 } 
