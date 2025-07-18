@@ -147,29 +147,29 @@ const calculator = {
     // 월 수익 계산 (운영 비용 포함, 밸리데이터가 커미션 가져감)
     calculateMonthlyProfit: (delegationValue, apy, commission, monthlyOperatingCost = 0) => {
         const grossYearlyProfit = delegationValue * apy / 100;
-        const commissionEarnings = grossYearlyProfit * (commission / 100);
-        const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
+        // 커미션은 밸리데이터가 가져가는 수익의 비율 (0-100%)
+        const validatorYearlyProfit = grossYearlyProfit * (commission / 100);
         const yearlyOperatingCost = monthlyOperatingCost * 12;
-        const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
+        const netYearlyProfit = validatorYearlyProfit - yearlyOperatingCost;
         return netYearlyProfit / 12;
     },
     
     // 연 수익 계산 (운영 비용 포함, 밸리데이터가 커미션 가져감)
     calculateYearlyProfit: (delegationValue, apy, commission, monthlyOperatingCost = 0) => {
         const grossYearlyProfit = delegationValue * apy / 100;
-        const commissionEarnings = grossYearlyProfit * (commission / 100);
-        const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
+        // 커미션은 밸리데이터가 가져가는 수익의 비율 (0-100%)
+        const validatorYearlyProfit = grossYearlyProfit * (commission / 100);
         const yearlyOperatingCost = monthlyOperatingCost * 12;
-        return totalYearlyProfit - yearlyOperatingCost;
+        return validatorYearlyProfit - yearlyOperatingCost;
     },
     
     // 실제 APY 계산 (운영 비용 포함, 밸리데이터가 커미션 가져감)
     calculateActualApy: (apy, commission, delegationValue, monthlyOperatingCost = 0) => {
         const grossYearlyProfit = delegationValue * apy / 100;
-        const commissionEarnings = grossYearlyProfit * (commission / 100);
-        const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
+        // 커미션은 밸리데이터가 가져가는 수익의 비율 (0-100%)
+        const validatorYearlyProfit = grossYearlyProfit * (commission / 100);
         const yearlyOperatingCost = monthlyOperatingCost * 12;
-        const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
+        const netYearlyProfit = validatorYearlyProfit - yearlyOperatingCost;
         return (netYearlyProfit / delegationValue) * 100;
     }
 };

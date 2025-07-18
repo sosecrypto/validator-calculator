@@ -97,10 +97,10 @@ function calculateProfitUsd() {
     const monthlyOperatingCost = parseFloat(operatingCostUsdInput.value) || 0;
     
     const grossYearlyProfit = delegation * (apy / 100);
-    const commissionEarnings = grossYearlyProfit * (commission / 100);
-    const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
+    // 커미션은 밸리데이터가 가져가는 수익의 비율 (0-100%)
+    const validatorYearlyProfit = grossYearlyProfit * (commission / 100);
     const yearlyOperatingCost = monthlyOperatingCost * 12;
-    const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
+    const netYearlyProfit = validatorYearlyProfit - yearlyOperatingCost;
     const monthlyProfit = netYearlyProfit / 12;
     const actualApy = (netYearlyProfit / delegation) * 100;
     
@@ -123,10 +123,10 @@ function calculateProfitToken() {
     const tokenPrice = totalSupply > 0 ? fdv / totalSupply : 0;
     const delegationUSD = tokenAmount * tokenPrice;
     const grossYearlyProfit = delegationUSD * (apy / 100);
-    const commissionEarnings = grossYearlyProfit * (commission / 100);
-    const totalYearlyProfit = grossYearlyProfit + commissionEarnings;
+    // 커미션은 밸리데이터가 가져가는 수익의 비율 (0-100%)
+    const validatorYearlyProfit = grossYearlyProfit * (commission / 100);
     const yearlyOperatingCost = monthlyOperatingCost * 12;
-    const netYearlyProfit = totalYearlyProfit - yearlyOperatingCost;
+    const netYearlyProfit = validatorYearlyProfit - yearlyOperatingCost;
     const monthlyProfit = netYearlyProfit / 12;
     const actualApy = (netYearlyProfit / delegationUSD) * 100;
     
@@ -246,12 +246,11 @@ function createScenarios(targetProfit, fdv, totalSupply, range, count) {
             const commission = commissionRange[j];
             const tokenPrice = fdv / totalSupply;
             // 목표 수익을 달성하기 위한 위임 USD (밸리데이터가 커미션 가져감)
-            const grossYearlyProfit = targetProfit / (1 + commission / 100);
-            const requiredDelegationUSD = grossYearlyProfit / (apy / 100);
+            const requiredGrossYearlyProfit = targetProfit / (commission / 100);
+            const requiredDelegationUSD = requiredGrossYearlyProfit / (apy / 100);
             const requiredDelegationTokens = requiredDelegationUSD / tokenPrice;
             const actualGrossYearlyProfit = requiredDelegationUSD * (apy / 100);
-            const commissionEarnings = actualGrossYearlyProfit * (commission / 100);
-            const actualYearlyProfit = actualGrossYearlyProfit + commissionEarnings;
+            const actualYearlyProfit = actualGrossYearlyProfit * (commission / 100);
             const actualMonthlyProfit = actualYearlyProfit / 12;
             const actualApy = (actualYearlyProfit / requiredDelegationUSD) * 100;
             const difference = Math.abs(actualYearlyProfit - targetProfit);
